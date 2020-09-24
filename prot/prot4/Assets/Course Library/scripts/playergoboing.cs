@@ -17,6 +17,7 @@ public class playergoboing : MonoBehaviour
 	
 	public bool grounded = true;
 	public bool gameing = true;
+	public bool jumped = true;
 	
 	public int score;
 	
@@ -38,7 +39,9 @@ public class playergoboing : MonoBehaviour
 		Physics.gravity = new Vector3(0, gravmod * -9.81f, 0);
 		score = 0;
 		gameing = true;
-		grounded = true;
+		grounded = false;
+		jumped = true;
+		transform.position = new Vector3(0, 1, 0);
 		scoretxt.text = score.ToString();
 		gameo.enabled = false;
 		
@@ -54,9 +57,12 @@ public class playergoboing : MonoBehaviour
     {
 		scoretxt.text = score.ToString();
 		
+		if(b.velocity.y <= 0) jumped = true;
+		
 		if(Input.GetKeyDown(KeyCode.Space) && grounded && gameing){
 			b.AddForce(new Vector3(0, jumpforce, 0), jumptype);
 			grounded = false;
+			jumped = false;
 			
 			dirt.Stop();
 			animations.SetTrigger("Jump_trig");
@@ -68,7 +74,7 @@ public class playergoboing : MonoBehaviour
     }
 	
 	private void OnCollisionEnter(Collision c){
-		if(c.gameObject.CompareTag("evil")){
+		if(c.gameObject.CompareTag("evil") && gameing){
 			gameing = false;
 			gameo.enabled = true;
 			
@@ -78,7 +84,9 @@ public class playergoboing : MonoBehaviour
 			explo.Play();
 			
 			sfx.PlayOneShot(crunchfx, 1.0f);
-		}else if(c.gameObject.CompareTag("ground") && gameing){
+		}
+		
+		if(c.gameObject.CompareTag("ground") && gameing && jumped){
 			grounded = true;
 			if(gameing){
 				transform.position = new Vector3(0, 0.025f, 0);
