@@ -23,6 +23,14 @@ public class playergoboing : MonoBehaviour
 	public Text scoretxt;
 	public Text gameo;
 	
+	private Animator animations;
+	public ParticleSystem dirt;
+	public ParticleSystem explo;
+	
+	public AudioClip crunchfx;
+	public AudioClip boingfx;
+	public AudioSource sfx;
+	
     // Start is called before the first frame update
     void Start()
     {
@@ -33,6 +41,12 @@ public class playergoboing : MonoBehaviour
 		grounded = true;
 		scoretxt.text = score.ToString();
 		gameo.enabled = false;
+		
+		animations = GetComponent<Animator>();
+		animations.SetFloat("Speed_f", 1.0f);
+		
+		dirt.Play();
+		explo.Stop();
     }
 
     // Update is called once per frame
@@ -43,6 +57,11 @@ public class playergoboing : MonoBehaviour
 		if(Input.GetKeyDown(KeyCode.Space) && grounded && gameing){
 			b.AddForce(new Vector3(0, jumpforce, 0), jumptype);
 			grounded = false;
+			
+			dirt.Stop();
+			animations.SetTrigger("Jump_trig");
+			
+			sfx.PlayOneShot(boingfx, 1.0f);
 		} else if(Input.GetKeyDown(KeyCode.R) && !gameing){
 			UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
 		}
@@ -52,9 +71,20 @@ public class playergoboing : MonoBehaviour
 		if(c.gameObject.CompareTag("evil")){
 			gameing = false;
 			gameo.enabled = true;
-		}else if(c.gameObject.CompareTag("ground")){
+			
+			animations.SetBool("Death_b", true);
+			animations.SetInteger("DeathType_int", 1);
+			dirt.Stop();
+			explo.Play();
+			
+			sfx.PlayOneShot(crunchfx, 1.0f);
+		}else if(c.gameObject.CompareTag("ground") && gameing){
 			grounded = true;
-			if(gameing)transform.position = new Vector3(0, 0.025f, 0);
+			if(gameing){
+				transform.position = new Vector3(0, 0.025f, 0);
+				animations.SetTrigger("StopJump");
+				dirt.Play();
+			}
 		}
 	}
 }
